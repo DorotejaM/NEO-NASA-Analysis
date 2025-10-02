@@ -22,4 +22,6 @@ FROM neo
 WHERE absolute_magnitude IS NULL; --in order to not have too many queries, WHERE statement was changed to check all columns.
 
 --28 NULL values were found, so we will delete them.
-DELETE FROM NEO WHERE absolute_magnitude IS NULL;
+DELETE FROM NEO WHERE absolute_magnitude IS NULL; 
+
+--Du
