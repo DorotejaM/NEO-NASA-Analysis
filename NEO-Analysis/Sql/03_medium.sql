@@ -10,9 +10,9 @@ group_cte AS (
     FROM neo n
     GROUP BY n.year
 )
-SELECT h.year, 
+SELECT h.year,
 ROUND(CAST(h.hazardous AS FLOAT)/CAST(g.year_count AS FLOAT),2) AS Per_year_hazard
-FROM 
+FROM
 hazardous_cte h
 JOIN group_cte g
     ON h.year = g.year
@@ -68,7 +68,7 @@ HAVING COUNT(CASE WHEN relative_velocity > 100000 THEN 1 END)>500;
 
 --How many years had more than 10 objects that passed closer than 100,000 km?
 SELECT year
-FROM neo 
+FROM neo
 GROUP BY year
 HAVING COUNT(CASE WHEN miss_distance < 100000 THEN 1 END) > 10;
 
@@ -78,7 +78,7 @@ FROM neo
 WHERE is_hazardous = 'True'
 GROUP BY year
 ORDER BY AVG(estimated_diameter_max) DESC
-LIMIT 1; 
+LIMIT 1;
 
 -- Which year had the lowest average brightness (i.e. highest absolute_magnitude value)?
 SELECT year
