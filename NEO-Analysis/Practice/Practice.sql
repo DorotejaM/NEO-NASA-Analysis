@@ -134,11 +134,32 @@ ORDER BY rel
 LIMIT 1;
 
 -- 4. Which 3 years had the lowest average miss distance among hazardous objects?
-
+WITH hazard_cte AS (
+SELECT year, miss_distance
+FROM neo2
+WHERE is_hazardous = 'True'
+)
+SELECT year, ROUND(AVG(miss_distance),2) avg_miss
+FROM hazard_cte
+GROUP BY year
+ORDER BY  avg_miss
+LIMIT 3;
 
 -- 5. What is the difference in average brightness (absolute_magnitude) between hazardous and non-hazardous objects?
+WITH hazard_cte AS (
+SELECT neo_id, AVG(absolute_magnitude) am
+FROM neo2
+WHERE is_hazardous = 'True'
+),
+non_hazard_cte AS (
+SELECT neo_id, AVG(absolute_magnitude) am
+FROM neo2
+WHERE is_hazardous = 'False')
+SELECT h.am - n.am brightness_diff
+FROM hazard_cte h, non_hazard_cte n;
 
 -- 6. What are the typical velocity values for objects with extremely large diameters (e.g. over 1 km)?
+
 
 -- 7. Is there any year in which all objects were classified as non-hazardous?
 
