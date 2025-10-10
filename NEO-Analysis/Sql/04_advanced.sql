@@ -1,18 +1,18 @@
---Which is the largest NEO (by max diameter) per year?
+--1. Which is the largest NEO (by max diameter) per year?
  WITH max_dia AS(
     SELECT
     neo_id, year, estimated_diameter_max,
     RANK () OVER (PARTITION BY year ORDER BY estimated_diameter_max DESC) rnk
     FROM neo2)
-SELECT year, neo_id, estimated_diameter_max
+SELECT year, neo_id, ROUND(estimated_diameter_max, 2) 'estimated diameter max'
 FROM max_dia
 WHERE rnk = 1
-ORDER BY year DESC;
+ORDER BY estimated_diameter_max DESC;
 
---How does miss distance change year-over-year for the fastest object per year?
- WITH fast_cte (
+--2. How does miss distance change year-over-year for the fastest object per year?
+ WITH fast_cte AS (
     SELECT neo_id, year, miss_distance,
-    RANK () OVER (PARTITION BY year ORDER BY relative_velocity DESC) rnk
+    RANK () OVER (PARTITION BY year ORDER BY rel_velocity DESC) rnk
     FROM neo2
  )
  SELECT year, miss_distance, miss_distance - LAG(miss_distance) OVER (ORDER BY year) yoy_dif
@@ -20,23 +20,50 @@ FROM fast_cte
 WHERE rnk = 1
 ORDER BY year;
 
---Which objects had a smaller miss distance than the previous one in the same year?
-WITH miss_cte AS (
-    SELECT neo_id, year,
-    LAG(miss_distance) OVER (PARTITION BY year ORDER BY miss_distance)
+--3. Which objects had a smaller miss distance than the previous one in the same year?
+WITH miss_cte AS(
+SELECT year, neo_id, miss_distance, (ROUND(miss_distance - LAG(miss_distance) OVER (PARTITION BY year ORDER BY neo_id),2)) yoy
+FROM neo2)
+SELECT neo_id, yoy
+FROM miss_cte 
+WHERE yoy < 0
+ORDER BY yoy 
+LIMIT 10;
+
+--4. Top 5 fastest objects per year?
+ WITH speed_cte AS(
+    SELECT
+    neo_id, year, rel_velocity,
+    RANK () OVER (PARTITION BY year ORDER BY rel_velocity DESC) rnk
+    FROM neo2)
+SELECT year, neo_id, rel_velocity
+FROM speed_cte
+WHERE rnk BETWEEN 1 AND 5
+ORDER BY year, rel_velocity DESC;
+
+--5. What is the average miss distance per year compared to the overall average miss distance?
+SELECT DISTINCT year, AVG(miss_distance) OVER (PARTITION BY year) avg_miss_yr, 
+AVG(miss_distance) OVER () avg_miss, 
+(AVG(miss_distance) OVER (PARTITION BY year) -  AVG(miss_distance) OVER ()) compared
+FROM neo2
+ORDER BY compared DESC;
+
+--!!!6. Cumulative count of hazardous objects over time?
+WITH cumul_cte AS (
+    SELECT  year, COUNT(*) yr_count 
     FROM neo2
-)
+    WHERE is_hazardous = 'True'
+    GROUP BY year
+    )
+SELECT year, yr_count, SUM(yr_count) OVER (ORDER BY year) total_count
+FROM cumul_cte
+ORDER BY year;
 
---Top 5 fastest objects per year?
+--7. Which object had the biggest increase in velocity compared to the previous object in the same year?
 
---What is the average miss distance per year compared to the overall average miss distance?
 
---Cumulative count of hazardous objects over time?
+--8. Which year had the most NEOs ranked in the top 10 closest encounters of all time?
 
---Which object had the biggest increase in velocity compared to the previous object in the same year?
+--9. Find the average speed of the top 3 brightest objects per year.
 
---Which year had the most NEOs ranked in the top 10 closest encounters of all time?
-
---Find the average speed of the top 3 brightest objects per year.
-
---Which NEO had the smallest miss distance within each size category?
+--10. Which NEO had the smallest miss distance within each size category?

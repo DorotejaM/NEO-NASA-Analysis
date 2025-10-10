@@ -80,23 +80,6 @@ FROM neo2;
 SELECT COUNT(DISTINCT neo_id) 'Total Num of NEOs'
 FROM neo2;
 
-
-SELECT neo_id, COUNT(*)
-FROM neo
-GROUP BY neo_id
-HAVING COUNT(*) > 1
-ORDER BY COUNT(*) DESC
-LIMIT 20;
-
-SELECT 
-COUNT(DISTINCT absolute_magnitude),  
-COUNT(DISTINCT estimated_diameter_min),
-COUNT(DISTINCT estimated_diameter_max),
-COUNT(DISTINCT orbiting_body),
-COUNT(DISTINCT relative_velocity),
-COUNT(DISTINCT miss_distance)
-FROM neo;
-
 -- 1. What is the percentage of hazardous objects relative to the total number per year?
 WITH hazardous_cte AS (
 SELECT year, COUNT(*) hazardous
@@ -110,7 +93,7 @@ GROUP BY year)
 SELECT h.year, CONCAT(ROUND(CAST(h.hazardous AS FLOAT)/CAST(t.total AS FLOAT)*100, 3), '%') '% of hazard objects'
 FROM hazardous_cte h
 JOIN total_num t ON h.year=t.year
---WHERE ROUND(CAST(h.hazardous AS FLOAT)/CAST(t.total AS FLOAT)*100, 3) = 100.0
+-- WHERE ROUND(CAST(h.hazardous AS FLOAT)/CAST(t.total AS FLOAT)*100, 3) = 100.0
 ORDER BY h.year DESC;
 
 -- 2. Which year had the highest number of objects with a maximum diameter greater than 500 meters?
@@ -127,20 +110,16 @@ SELECT year, AVG(rel_velocity) rel
 FROM neo2
 WHERE  miss_distance <  1000000
 GROUP BY year)
-SELECT year
+SELECT year, ROUND(rel, 2) highest_average_speed
 FROM closer_cte
-GROUP BY year
-ORDER BY rel
+ORDER BY rel DESC
 LIMIT 1;
 
 -- 4. Which 3 years had the lowest average miss distance among hazardous objects?
-WITH hazardous_cte AS (
-SELECT year, miss_distance
+SELECT year, AVG(miss_distance) avg_miss
 FROM neo2
 WHERE is_hazardous = 'True'
-)
-SELECT year, AVG(miss_distance) avg_miss
-FROM hazardous_cte
+GROUP BY year
 ORDER BY avg_miss
 LIMIT 3;
 
@@ -153,16 +132,13 @@ WHERE is_hazardous = 'True'
 SELECT AVG(absolute_magnitude) am
 FROM neo2
 WHERE is_hazardous = 'False'
-) SELECT ABS(h.am-n.am)
+) SELECT ROUND(ABS(h.am-n.am), 2) brightness_diff
 FROM hazardous_cte h, no_hazardous_cte n;
 
 -- 6. What are the typical velocity values for objects with extremely large diameters (e.g. over 1 km)?
-WITH large_diam_cte AS (
-    SELECT relative_velocity
-    WHERE estimated_diameter_max >1
-    FROM neo2
-) SELECT AVG(relative_velocity)
-FROM large_diam_cte;
+SELECT ROUND(AVG(rel_velocity), 2) avg_velocity
+FROM neo2
+WHERE estimated_diameter_max > 1;
 
 -- !!!! 7. Is there any year in which all objects were classified as non-hazardous? !!!!
 SELECT year, SUM(is_hazardous = 'True') sum_haz
@@ -178,15 +154,17 @@ WITH vel_cte AS (
     GROUP BY year
 ) SELECT year, count
 FROM vel_cte
-WHERE count > 1000;
+WHERE count > 10
+ORDER BY count DESC;
 
 -- 9. How many years had more than 10 objects that passed closer than 100,000 km?
 WITH closer_cte AS (
-    SELECT year
+    SELECT year, COUNT(*) count
     FROM neo2
+    WHERE miss_distance < 100000
     GROUP BY year
-    HAVING miss_distance < 100000
-) SELECT COUNT(*) count
+) 
+SELECT COUNT(*)
 FROM closer_cte
 WHERE count > 10;
 
@@ -194,10 +172,10 @@ WHERE count > 10;
 WITH haz_cte AS (
     SELECT year, AVG((estimated_diameter_min+estimated_diameter_max)/2) avg_dia
     FROM neo2
+    WHERE is_hazardous = 'True'
     GROUP BY year
-    HAVING is_hazardous = 'True'
 )
-SELECT year
+SELECT year, avg_dia
 FROM haz_cte
 ORDER BY avg_dia DESC
 LIMIT 1;
@@ -213,12 +191,13 @@ ORDER BY am DESC
 LIMIT 1;
 
 -- 12. Which year had the most objects with a diameter between 1 and 3?
-WITH dia_cte (
+WITH dia_cte AS (
     SELECT year, COUNT (*) diacou
     FROM neo2
-    WHERE 3 > (estimated_diameter_min+estimated_diameter_max)/2 > 1
-)
-SELECT year
+    WHERE (estimated_diameter_min+estimated_diameter_max)/2 BETWEEN 1 AND 3
+    GROUP BY year
+    )
+SELECT year, diacou
 FROM dia_cte
 ORDER BY diacou DESC
 LIMIT 1;
