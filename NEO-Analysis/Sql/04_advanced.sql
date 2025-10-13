@@ -48,19 +48,22 @@ AVG(miss_distance) OVER () avg_miss,
 FROM neo2
 ORDER BY compared DESC;
 
---!!!6. Cumulative count of hazardous objects over time?
-WITH cumul_cte AS (
-    SELECT  year, COUNT(*) yr_count 
+--6. Cumulative count of hazardous objects over time?
+WITH hazard_cte AS(
+    SELECT year, COUNT(*) cnt
     FROM neo2
     WHERE is_hazardous = 'True'
-    GROUP BY year
-    )
-SELECT year, yr_count, SUM(yr_count) OVER (ORDER BY year) total_count
-FROM cumul_cte
-ORDER BY year;
+    GROUP BY year)
+SELECT year, cnt, SUM(cnt) OVER (ORDER BY year)
+FROM hazard_cte;
 
 --7. Which object had the biggest increase in velocity compared to the previous object in the same year?
-
+WITH vel_cte AS (
+    SELECT year, neo_id, rel_velocity, (rel_velocity - LAG(rel_velocity, 1, rel_velocity) OVER (PARTITION BY year ORDER BY neo_id)) diff
+    FROM neo2)
+SELECT year, neo_id, diff, RANK () OVER (ORDER BY diff DESC) rnk
+FROM vel_cte
+LIMIT 1;
 
 --8. Which year had the most NEOs ranked in the top 10 closest encounters of all time?
 
