@@ -10,7 +10,7 @@ WHERE rnk = 1
 ORDER BY estimated_diameter_max DESC;
 
 --2. How does miss distance change year-over-year for the fastest object per year?
- WITH fast_cte AS (
+ WITH fast_cte AS(
     SELECT neo_id, year, miss_distance,
     RANK () OVER (PARTITION BY year ORDER BY rel_velocity DESC) rnk
     FROM neo2
@@ -58,15 +58,39 @@ SELECT year, cnt, SUM(cnt) OVER (ORDER BY year)
 FROM hazard_cte;
 
 --7. Which object had the biggest increase in velocity compared to the previous object in the same year?
-WITH vel_cte AS (
-    SELECT year, neo_id, rel_velocity, (rel_velocity - LAG(rel_velocity, 1, rel_velocity) OVER (PARTITION BY year ORDER BY neo_id)) diff
+WITH vel_cte AS(
+    SELECT 
+        year, neo_id, rel_velocity, 
+        (rel_velocity - LAG(rel_velocity, 1, rel_velocity) OVER (PARTITION BY year ORDER BY neo_id)) diff
     FROM neo2)
-SELECT year, neo_id, diff, RANK () OVER (ORDER BY diff DESC) rnk
+SELECT 
+    year, neo_id, diff, 
+    RANK () OVER (ORDER BY diff DESC) rnk
 FROM vel_cte
 LIMIT 1;
 
 --8. Which year had the most NEOs ranked in the top 10 closest encounters of all time?
+WITH close_cte AS(
+    SELECT neo_id, year, miss_distance, 
+    RANK() OVER (ORDER BY miss_distance) rnk
+    FROM neo2
+) SELECT year, COUNT(rnk) OVER (PARTITION BY year) cnt 
+FROM close_cte
+WHERE rnk <= 10
+ORDER BY cnt DESC
+LIMIT 1;
 
---9. Find the average speed of the top 3 brightest objects per year.
+--9. Find the average speed of the top 3 brightest objects per year (lowe magnitude = brighter object).
+WITH bright_cte AS(
+    SELECT year, absolute_magnitude, RANK() OVER (PARTITION BY year ORDER BY absolute_magnitude) rnk
+    FROM neo2
+    )
+SELECT year, ROUND(AVG(absolute_magnitude), 2)
+FROM bright_cte
+WHERE rnk BETWEEN 1 AND 3
+GROUP BY year;
 
 --10. Which NEO had the smallest miss distance within each size category?
+
+
+ 
