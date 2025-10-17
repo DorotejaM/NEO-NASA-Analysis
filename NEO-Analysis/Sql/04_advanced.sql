@@ -89,4 +89,3 @@ SELECT year, ROUND(AVG(absolute_magnitude), 2)
 FROM bright_cte
 WHERE rnk BETWEEN 1 AND 3
 GROUP BY year;
-
