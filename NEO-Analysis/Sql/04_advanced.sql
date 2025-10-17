@@ -89,3 +89,21 @@ SELECT year, ROUND(AVG(absolute_magnitude), 2)
 FROM bright_cte
 WHERE rnk BETWEEN 1 AND 3
 GROUP BY year;
+
+--10. Total number of Hazardous NEOs per distance categories
+SELECT 
+    CASE 
+        WHEN miss_distance <= 2900000 THEN 'Very Close'
+        WHEN miss_distance <= 7100000 THEN 'Close'
+        WHEN miss_distance <= 14400000 THEN 'Moderate'
+        WHEN miss_distance <= 29000000 THEN 'Far'
+        ELSE 'Very Far'
+    END AS distance_category,
+    COUNT(*) AS count_objects,
+    is_hazardous
+FROM neo2
+GROUP BY distance_category, is_hazardous
+ORDER BY COUNT(*) DESC;
+
+
+    
