@@ -90,5 +90,3 @@ FROM bright_cte
 WHERE rnk BETWEEN 1 AND 3
 GROUP BY year;
 
---10. Which NEO had the smallest miss distance within each size category?
-
