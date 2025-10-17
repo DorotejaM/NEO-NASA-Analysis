@@ -92,5 +92,3 @@ GROUP BY year;
 
 --10. Which NEO had the smallest miss distance within each size category?
 
-
- 
