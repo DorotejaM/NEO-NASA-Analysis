@@ -1,7 +1,3 @@
-Naravno — evo profesionalne, GitHub-standard verzije **README.md** (spremne za direktno postavljanje na repozitorijum):
-
----
-
 # NEO-NASA-Analysis
 
 **Exploratory analysis of NASA Near-Earth Objects (NEO) dataset using SQL and Tableau**
