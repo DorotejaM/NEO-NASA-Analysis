@@ -92,7 +92,7 @@ GROUP BY year;
 
 --10. Total number of Hazardous NEOs per distance categories
 -- First we need to find out categories, we shall use bins
-WITH tiled AS (
+WITH bins AS (
   SELECT
     neo_id,
     miss_distance,
@@ -100,11 +100,8 @@ WITH tiled AS (
   FROM neo2
 )
 SELECT
-  bin_id,
-  COUNT(*)                           AS n_rows,
-  MIN(miss_distance)                 AS bin_min,
-  MAX(miss_distance)                 AS bin_max
-FROM tiled
+  bin_id, COUNT(*) n_rows, MIN(miss_distance) bin_min, MAX(miss_distance) bin_max
+FROM bins
 GROUP BY bin_id
 ORDER BY bin_id;
 
