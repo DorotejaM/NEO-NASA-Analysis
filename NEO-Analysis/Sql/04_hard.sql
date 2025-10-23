@@ -42,7 +42,7 @@ WHERE rnk BETWEEN 1 AND 5
 ORDER BY year, rel_velocity DESC;
 
 --5. What is the average miss distance per year compared to the overall average miss distance?
-SELECT DISTINCT year, AVG(miss_distance) OVER (PARTITION BY year) avg_miss_yr, 
+SELECT year, AVG(miss_distance) OVER (PARTITION BY year) avg_miss_yr, 
 AVG(miss_distance) OVER () avg_miss, 
 (AVG(miss_distance) OVER (PARTITION BY year) -  AVG(miss_distance) OVER ()) compared
 FROM neo2
@@ -91,6 +91,33 @@ WHERE rnk BETWEEN 1 AND 3
 GROUP BY year;
 
 --10. Total number of Hazardous NEOs per distance categories
+-- First we need to find out categories, we shall use bins
+WITH tiled AS (
+  SELECT
+    neo_id,
+    miss_distance,
+    NTILE(5) OVER (ORDER BY miss_distance) AS bin_id
+  FROM neo2
+)
+SELECT
+  bin_id,
+  COUNT(*)                           AS n_rows,
+  MIN(miss_distance)                 AS bin_min,
+  MAX(miss_distance)                 AS bin_max
+FROM tiled
+GROUP BY bin_id
+ORDER BY bin_id;
+
+/* result of the first query
+bin_id  n_rows  bin_min           bin_max
+------  ------  ----------------  ----------------
+1       6701    6745.532515957    2899020.51613121
+2       6701    2899165.28199001  7102051.37722062
+3       6701    7102445.49280913  14457288.9065736
+4       6700    14458093.3990391  29061455.7096346
+5       6700    29063481.6986283  74788325.6237781
+*/
+
 SELECT 
     CASE 
         WHEN miss_distance <= 2900000 THEN 'Very Close'
@@ -105,5 +132,3 @@ FROM neo2
 GROUP BY distance_category, is_hazardous
 ORDER BY COUNT(*) DESC;
 
-
-    
