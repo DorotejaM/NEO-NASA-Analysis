@@ -1,4 +1,5 @@
-_1. Which is the largest NEO (by max diameter) per year?_
+1. Which is the largest NEO (by max diameter) per year?
+```sql
  WITH max_dia AS(
     SELECT
     neo_id, year, estimated_diameter_max,
@@ -8,8 +9,9 @@ SELECT year, neo_id, ROUND(estimated_diameter_max, 2) 'estimated diameter max'
 FROM max_dia
 WHERE rnk = 1
 ORDER BY estimated_diameter_max DESC;
+```
+2. How does miss distance change year-over-year for the fastest object per year?
 
---2. How does miss distance change year-over-year for the fastest object per year?
  WITH fast_cte AS(
     SELECT neo_id, year, miss_distance,
     RANK () OVER (PARTITION BY year ORDER BY rel_velocity DESC) rnk
@@ -138,24 +140,3 @@ WITH close_cte AS (
 SELECT *
 FROM close_cte
 WHERE rnk BETWEEN 1 AND 10;
-
-
-.mode csv
-.headers on
-.output top10_closest_neos.csv
-WITH close_cte AS (
-    SELECT 
-        neo_id,
-        name,
-        year,
-        miss_distance,
-        rel_velocity,
-        is_hazardous,
-        RANK() OVER (ORDER BY miss_distance ASC) AS rnk
-    FROM neo2
-)
-SELECT *
-FROM close_cte
-WHERE rnk <= 10
-ORDER BY miss_distance ASC;
-.output stdout
