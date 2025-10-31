@@ -48,3 +48,9 @@ This project analyzes NASA’s **Near-Earth Objects (1910–2024)** dataset cont
 * Identified yearly variations in NEO velocity and size distribution.
 * Measured frequency and proportion of hazardous objects over time.
 * Highlighted top 10 closest Earth encounters and high-risk years.
+
+---
+## Links
+
+[Tableau Visualization (Interactive Dashboard)](https://public.tableau.com/views/AnalyzingNASAsNear-EarthObjects19102024/Story1)  
+[GitHub Repository](https://github.com/tvojusername/NEO-NASA-Analysis)
