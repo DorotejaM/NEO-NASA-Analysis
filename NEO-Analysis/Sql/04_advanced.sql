@@ -1,9 +1,9 @@
-*1. Hazard Rate by Distance Quantiles
+1. Hazard Rate by Distance Quantiles
 Divide miss_distance into five equal-frequency quantiles. For each quantile, calculate:
 total number of NEOs,
 number of hazardous NEOs,
 hazard rate (%),
-minimum and maximum miss distance values.*
+minimum and maximum miss distance values.
 
 WITH bin_cte AS(
 SELECT neo_id, miss_distance, NTILE(5) OVER (ORDER BY miss_distance) bins, is_hazardous
@@ -20,7 +20,7 @@ ON b.neo_id=h.neo_id
 GROUP BY bins;
 
 /*
-Just testing
+--Just testing
 WITH hazard_cte AS(
 SELECT neo_id, COUNT(neo_id) cnt1
 FROM neo2
@@ -34,18 +34,28 @@ FROM hazard_cte h
 CROSS JOIN not_hazard_cte n;
 */
 
+2. Year-over-Year Change in Hazard Rate
+For each year, calculate the hazard rate (hazard / total). Then, compute the year-over-year 
+change in percentage points.
+Expected output: year, hazard_rate, yoy_change_pp
+WITH hazard_cte AS(
+SELECT neo_id, year, is_hazardous
+FROM neo2
+WHERE is_hazardous = 'True')
+SELECT n.year, COUNT(h.neo_id), ROUND((100.0 * COUNT(h.neo_id) / COUNT(n.neo_id)) 
+- LAG(100.0 * COUNT(h.neo_id) / COUNT(n.neo_id)) OVER (ORDER BY h.year),2) yoy_change_pp,
+CONCAT(100*COUNT(h.neo_id)/COUNT(n.neo_id),'%') hazard_rate
+FROM neo2 n LEFT JOIN hazard_cte h 
+ON n.neo_id=h.neo_id
+GROUP BY n.year;
 
-/*2. Year-over-Year Change in Hazard Rate
-For each year, calculate the hazard rate (hazard / total). Then, compute the year-over-year change in percentage points.
-Expected output: year, hazard_rate, yoy_change_pp.*/
-
-/*3. Spearman Rank Correlation of Velocity and Distance per Year
+3. Spearman Rank Correlation of Velocity and Distance per Year
 For each year, compute the Spearman correlation coefficient (ρ) between rel_velocity and miss_distance, using ranking and the standard Spearman formula.
-Output: year, spearman_rho (ranging from -1 to 1).*/
+Output: year, spearman_rho (ranging from -1 to 1).
 
-/*4. Velocity Outliers per Year (±3σ)
+4. Velocity Outliers per Year (±3σ)
 For each year, calculate the mean (μ) and standard deviation (σ) of rel_velocity, then identify objects with |z| ≥ 3.
-Output: top 50 outliers with year, neo_id, z-score.*/
+Output: top 50 outliers with year, neo_id, z-score.
 
 /*5. Top-k with Ties
 For each year, return the top 5 fastest NEOs based on rel_velocity, including any objects that share the 5th rank (ties).
