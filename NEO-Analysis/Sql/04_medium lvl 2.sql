@@ -1,4 +1,4 @@
---1. Which is the largest NEO (by max diameter) per year?
+*1. Which is the largest NEO (by max diameter) per year?*
  WITH max_dia AS(
     SELECT
     neo_id, year, estimated_diameter_max,
