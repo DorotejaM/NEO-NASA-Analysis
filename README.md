@@ -1,9 +1,8 @@
 # NEO-NASA-Analysis
 
-**Exploratory analysis of NASA Near-Earth Objects (NEO) dataset using SQL and [Tableau](https://public.tableau.com/views/AnalyzingNASAsNear-EarthObjects19102024/Story1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link).
-Problems were solved without using AI.**
+**Exploratory analysis of NASA Near-Earth Objects (NEO) dataset using SQL and [Tableau](https://public.tableau.com/views/AnalyzingNASAsNear-EarthObjects19102024/Story1?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link).**
 
-All analysis and visualizations were completed without AI assistance—100% analytical and coding work.
+All analysis and visualizations were completed without AI assistance, all analytical and coding work was done manually.
 
 
 ## Quick Summary
